@@ -5,6 +5,7 @@ import geom.Vec3D;
 
 import javax.swing.JPanel;
 import java.awt.*;
+import java.util.Arrays;
 import java.util.Vector;
 
 public class Screen extends JPanel implements Runnable {
@@ -50,6 +51,7 @@ public class Screen extends JPanel implements Runnable {
         //mesh.loadObjFile("axis.obj");
         mesh.loadObjFile("VFAN500_v13.obj");
         //mesh.loadObjFile("ship.obj");
+        //mesh.loadObjFile("Porsche 911 CFD READY v1.obj");
     }
 
     Vector<Triangle> vecTrianglesToDraw = new Vector<>();
@@ -92,11 +94,6 @@ public class Screen extends JPanel implements Runnable {
         g.setPaint(new GradientPaint(x1, y1, triangle.getColor().brighter(), x2, y2, triangle.getColor().darker()));
         g.setColor(triangle.getColor());
         g.fillPolygon(p);
-        /*
-        g.drawLine(x1, y1, x2, y2);
-        g.drawLine(x2, y2, x3, y3);
-        g.drawLine(x3, y3, x1, y1);
-         */
     }
 
     public void update(double delta) {
@@ -124,7 +121,7 @@ public class Screen extends JPanel implements Runnable {
         world = Mat4x4.multiplyMatrices(zRotation, xRotation);
         world = Mat4x4.multiplyMatrices(world, translationMatrix);
 
-        Vec3D vUp = new Vec3D(0, -1, 0);
+        Vec3D vUp = new Vec3D(0, 1, 0);
         Vec3D vTarget = new Vec3D(0, 0, 1);
         Mat4x4 matCameraRot = Mat4x4.createYRotation(fYaw);
         vLookDir = new Vec3D(0, 0, 1);
@@ -156,10 +153,10 @@ public class Screen extends JPanel implements Runnable {
             if (Vec3D.dotProduct(nNormalized, vCameraRay) < 0.0f) {
 
                 //Illumination
-                Vec3D lightDirection = new Vec3D(0.0f, 1.0f, 0.0f);
+                Vec3D lightDirection = new Vec3D(0.0f, 1.0f, -1.0f);
                 lightDirection.normalize();
 
-                //Dotproduct to adapt shading of the ligth
+                //Dotproduct to adapt shading of the light
                 float dp = Vec3D.dotProduct(lightDirection, nNormalized);
                 Color c = null;
                 int grey = (int) (Math.abs(dp) * 255);
@@ -171,54 +168,48 @@ public class Screen extends JPanel implements Runnable {
                 triViewed = triTransformed.applyMatrix(viewMat);
 
                 //Clipping
-                /*
                 int clippedTriangles = 0;
-
                 Triangle[] clipped = new Triangle[2];
                 clipped[0] = new Triangle();
                 clipped[1] = new Triangle();
                 triProjected = new Triangle();
-
-                clippedTriangles = Triangle.clipAgainstPlane(new Vec3D(0, 0, 1), new Vec3D(0, 0, 1), triViewed, clipped[0], clipped[1]);
+                clippedTriangles = Triangle.clipAgainstPlane(new Vec3D(0, 0, 10), new Vec3D(0, 0, 1), triViewed, clipped[0], clipped[1]);
                 for (int n = 0; n < clippedTriangles; n++) {
                     triProjected.tri[0] = Mat4x4.multiplyVector(clipped[n].tri[0], projectionMatrix);
-                    triProjected.tri[1] = Mat4x4.multiplyVector(clipped[n].tri[0], projectionMatrix);
-                    triProjected.tri[2] = Mat4x4.multiplyVector(clipped[n].tri[0], projectionMatrix);
+                    triProjected.tri[1] = Mat4x4.multiplyVector(clipped[n].tri[1], projectionMatrix);
+                    triProjected.tri[2] = Mat4x4.multiplyVector(clipped[n].tri[2], projectionMatrix);
 
                     triProjected.tri[0] = Vec3D.div(triProjected.tri[0], triProjected.tri[0].w);
                     triProjected.tri[1] = Vec3D.div(triProjected.tri[1], triProjected.tri[1].w);
                     triProjected.tri[2] = Vec3D.div(triProjected.tri[2], triProjected.tri[2].w);
 
+                    /*
+                    //Project 3D --> 2D
+                    triProjected = triViewed.applyMatrix(Mat4x4.multiplyMatrices(world, projectionMatrix));
+                    triProjected.tri[0] = Vec3D.div(triProjected.tri[0], triProjected.tri[0].w);
+                    triProjected.tri[1] = Vec3D.div(triProjected.tri[1], triProjected.tri[1].w);
+                    triProjected.tri[2] = Vec3D.div(triProjected.tri[2], triProjected.tri[2].w);
+                     */
 
 
+                    for (int i = 0; i < 3; i++) {
+                        triProjected.tri[i].x *= -1.0f;
+                        triProjected.tri[i].y *= -1.0f;
+                    }
 
+
+                    //Scale
+                    Vec3D vOffsetView = new Vec3D(1, 1, 0);
+                    for (int i = 0; i < 3; i++) {
+                        triProjected.tri[i] = Vec3D.add(triProjected.tri[i], vOffsetView);
+                    }
+                    for (int i = 0; i < 3; i++) {
+                        triProjected.tri[i].x *= 0.5f * screenWidth;
+                        triProjected.tri[i].y *= 0.5f * screenHeight;
+                    }
+                    triProjected.setColor(c);
+                    vecTrianglesToDraw.add(triProjected);
                 }
-
-                */
-                //Project 3D --> 2D
-                triProjected = triViewed.applyMatrix(Mat4x4.multiplyMatrices(world, projectionMatrix));
-                triProjected.tri[0] = Vec3D.div(triProjected.tri[0], triProjected.tri[0].w);
-                triProjected.tri[1] = Vec3D.div(triProjected.tri[1], triProjected.tri[1].w);
-                triProjected.tri[2] = Vec3D.div(triProjected.tri[2], triProjected.tri[2].w);
-
-
-                for (int i = 0; i < 3; i++) {
-                    triProjected.tri[i].x *= -1.0f;
-                    triProjected.tri[i].y *= -1.0f;
-                }
-
-
-                //Scale
-                Vec3D vOffsetView = new Vec3D(1, 1, 0);
-                for (int i = 0; i < 3; i++) {
-                    triProjected.tri[i] = Vec3D.add(triProjected.tri[i], vOffsetView);
-                }
-                for (int i = 0; i < 3; i++) {
-                    triProjected.tri[i].x *= 0.5f * screenWidth;
-                    triProjected.tri[i].y *= 0.5f * screenHeight;
-                }
-                triProjected.setColor(c);
-                vecTrianglesToDraw.add(triProjected);
             }
         }
     }

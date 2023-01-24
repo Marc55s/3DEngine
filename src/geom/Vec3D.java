@@ -18,22 +18,10 @@ public class Vec3D {
         this.w = w;
     }
 
-
     public Vec3D() {
         this(0, 0, 0, 1);
     }
 
-
-    public static Vec3D intersectPlane(Vec3D planeP, Vec3D planeN, Vec3D lineStart, Vec3D lineEnd) {
-        planeN.normalize();
-        float planeD = -Vec3D.dotProduct(planeN, planeP);
-        float ad = Vec3D.dotProduct(lineStart, planeN);
-        float bd = Vec3D.dotProduct(lineEnd, planeN);
-        float t = (planeD - ad) / (bd - ad);
-        Vec3D lineStartToEnd = Vec3D.sub(lineEnd, lineStart);
-        Vec3D lineToIntersect = Vec3D.mul(lineStartToEnd, t);
-        return Vec3D.add(lineStart, lineToIntersect);
-    }
 
     public static Vec3D add(Vec3D a, Vec3D b) {
         return new Vec3D(a.x + b.x, a.y + b.y, a.z + b.z);

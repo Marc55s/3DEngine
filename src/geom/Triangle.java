@@ -4,6 +4,7 @@ import java.awt.Color;
 
 public class Triangle {
     private Color color;
+    public Vec3D[] tri;
 
     public Triangle(Vec3D[] tri) {
         this.tri = tri;
@@ -13,7 +14,6 @@ public class Triangle {
         this(new Vec3D[]{new Vec3D(), new Vec3D(), new Vec3D()});
     }
 
-    public Vec3D[] tri = new Vec3D[3];
 
     public Triangle applyMatrix(Mat4x4 mat) {
         Vec3D[] tri = this.tri;
@@ -39,49 +39,63 @@ public class Triangle {
         if (d0 >= 0) {
             insidePoints[inside++] = inTri.tri[0];
         } else {
-            outsidePoints[outside++] = inTri.tri[0];
+            outsidePoints[outside] = inTri.tri[0];
+            outside++;
         }
         if (d1 >= 0) {
             insidePoints[inside++] = inTri.tri[1];
         } else {
-            outsidePoints[outside++] = inTri.tri[1];
+            outsidePoints[outside] = inTri.tri[1];
+            outside++;
         }
         if (d2 >= 0) {
             insidePoints[inside++] = inTri.tri[2];
         } else {
-            outsidePoints[outside++] = inTri.tri[2];
+            outsidePoints[outside] = inTri.tri[2];
+            outside++;
         }
         if (inside == 0) {
             return 0;
         }
         if (inside == 3) {
-            outTri = inTri;
+            System.arraycopy(inTri.tri, 0, outTri.tri, 0, outTri.tri.length);
+            //outTri = inTri;
             return 1;
         }
         if (inside == 1 && outside == 2) {
             outTri.setColor(inTri.getColor());
             outTri.tri[0] = insidePoints[0];
-            outTri.tri[1] = Vec3D.intersectPlane(planeP, planeN, insidePoints[0], outsidePoints[0]);
-            outTri.tri[2] = Vec3D.intersectPlane(planeP, planeN, insidePoints[0], outsidePoints[1]);
-
+            outTri.tri[1] = intersectPlane(planeP, planeN, insidePoints[0], outsidePoints[0]);
+            outTri.tri[2] = intersectPlane(planeP, planeN, insidePoints[0], outsidePoints[1]);
             return 1;
         }
         if (inside == 2 && outside == 1) {
+            //IMPORTANT new reference!!!!!!!!!
+            outTri = new Triangle();
+            outTri2 = new Triangle();
             outTri.setColor(inTri.getColor());
 
             outTri.tri[0] = insidePoints[0];
             outTri.tri[1] = insidePoints[1];
-            outTri.tri[2] = Vec3D.intersectPlane(planeP, planeN, insidePoints[0], outsidePoints[0]);
+            outTri.tri[2] = intersectPlane(planeP, planeN, insidePoints[0], outsidePoints[0]);
 
             outTri2.tri[0] = insidePoints[1];
             outTri2.tri[1] = insidePoints[2];
-            outTri2.tri[2] = Vec3D.intersectPlane(planeP, planeN, insidePoints[1], outsidePoints[0]);
-
+            outTri2.tri[2] = intersectPlane(planeP, planeN, insidePoints[1], outsidePoints[0]);
             return 2;
         }
+        return 0;
+    }
 
-        return -1;
-
+    public static Vec3D intersectPlane(Vec3D planeP, Vec3D planeN, Vec3D lineStart, Vec3D lineEnd) {
+        planeN.normalize();
+        float planeD = -Vec3D.dotProduct(planeN, planeP);
+        float ad = Vec3D.dotProduct(lineStart, planeN);
+        float bd = Vec3D.dotProduct(lineEnd, planeN);
+        float t = (-planeD - ad) / (bd - ad);
+        Vec3D lineStartToEnd = Vec3D.sub(lineEnd, lineStart);
+        Vec3D lineToIntersect = Vec3D.mul(lineStartToEnd, t);
+        return Vec3D.add(lineStart, lineToIntersect);
     }
 
     private static float shortestDistanceToPlane(Vec3D planeP, Vec3D planeN, Vec3D p) {
