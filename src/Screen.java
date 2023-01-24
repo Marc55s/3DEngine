@@ -48,8 +48,8 @@ public class Screen extends JPanel implements Runnable {
         setBackground(Color.BLACK);
         setDoubleBuffered(true);
         mesh = new Mesh();
-        //mesh.loadObjFile("axis.obj");
-        mesh.loadObjFile("VFAN500_v13.obj");
+        mesh.loadObjFile("axis.obj");
+        //mesh.loadObjFile("VFAN500_v13.obj");
         //mesh.loadObjFile("ship.obj");
         //mesh.loadObjFile("Porsche 911 CFD READY v1.obj");
     }
@@ -61,8 +61,8 @@ public class Screen extends JPanel implements Runnable {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
         g.setColor(Color.WHITE);
-        //RenderingHints rh = new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        //g2.setRenderingHints(rh);
+        RenderingHints rh = new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setRenderingHints(rh);
 
         //Z-Buffer
         //Map<Float, Triangle> map = new HashMap<>();
@@ -115,7 +115,7 @@ public class Screen extends JPanel implements Runnable {
         zRotation = Mat4x4.createZRotationMatrix(alpha * 0.5f);
         xRotation = Mat4x4.createXRotationMatrix(alpha);
 
-        Mat4x4 translationMatrix = Mat4x4.createTranslationMatrix(0, 0, 60); // OFFSET Y ###########################################
+        Mat4x4 translationMatrix = Mat4x4.createTranslationMatrix(0, 0, 6); // OFFSET Y ###########################################
         //World matrix
         Mat4x4 world;
         world = Mat4x4.multiplyMatrices(zRotation, xRotation);
@@ -173,7 +173,7 @@ public class Screen extends JPanel implements Runnable {
                 clipped[0] = new Triangle();
                 clipped[1] = new Triangle();
                 triProjected = new Triangle();
-                clippedTriangles = Triangle.clipAgainstPlane(new Vec3D(0, 0, 10), new Vec3D(0, 0, 1), triViewed, clipped[0], clipped[1]);
+                clippedTriangles = Triangle.clipAgainstPlane(new Vec3D(0, 0, 0.1f), new Vec3D(0, 0, 1), triViewed, clipped[0], clipped[1]);
                 for (int n = 0; n < clippedTriangles; n++) {
                     triProjected.tri[0] = Mat4x4.multiplyVector(clipped[n].tri[0], projectionMatrix);
                     triProjected.tri[1] = Mat4x4.multiplyVector(clipped[n].tri[1], projectionMatrix);
@@ -183,6 +183,7 @@ public class Screen extends JPanel implements Runnable {
                     triProjected.tri[1] = Vec3D.div(triProjected.tri[1], triProjected.tri[1].w);
                     triProjected.tri[2] = Vec3D.div(triProjected.tri[2], triProjected.tri[2].w);
 
+                    triProjected.setColor(clipped[n].getColor());
                     /*
                     //Project 3D --> 2D
                     triProjected = triViewed.applyMatrix(Mat4x4.multiplyMatrices(world, projectionMatrix));
@@ -197,7 +198,6 @@ public class Screen extends JPanel implements Runnable {
                         triProjected.tri[i].y *= -1.0f;
                     }
 
-
                     //Scale
                     Vec3D vOffsetView = new Vec3D(1, 1, 0);
                     for (int i = 0; i < 3; i++) {
@@ -207,7 +207,8 @@ public class Screen extends JPanel implements Runnable {
                         triProjected.tri[i].x *= 0.5f * screenWidth;
                         triProjected.tri[i].y *= 0.5f * screenHeight;
                     }
-                    triProjected.setColor(c);
+                    if (triProjected.getColor() == null)
+                        triProjected.setColor(c);
                     vecTrianglesToDraw.add(triProjected);
                 }
             }

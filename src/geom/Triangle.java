@@ -14,7 +14,6 @@ public class Triangle {
         this(new Vec3D[]{new Vec3D(), new Vec3D(), new Vec3D()});
     }
 
-
     public Triangle applyMatrix(Mat4x4 mat) {
         Vec3D[] tri = this.tri;
         return new Triangle(new Vec3D[]{
@@ -62,30 +61,28 @@ public class Triangle {
             //outTri = inTri;
             return 1;
         }
-        if (inside == 1 && outside == 2) {
-            outTri.setColor(inTri.getColor());
+        if (inside == 1) {
+            outTri.setColor(Color.GREEN.darker().darker().darker());
             outTri.tri[0] = insidePoints[0];
             outTri.tri[1] = intersectPlane(planeP, planeN, insidePoints[0], outsidePoints[0]);
             outTri.tri[2] = intersectPlane(planeP, planeN, insidePoints[0], outsidePoints[1]);
             return 1;
         }
-        if (inside == 2 && outside == 1) {
-            //IMPORTANT new reference!!!!!!!!!
-            outTri = new Triangle();
-            outTri2 = new Triangle();
-            outTri.setColor(inTri.getColor());
-
+        if (inside == 2) {
+            outTri.setColor(Color.RED);
             outTri.tri[0] = insidePoints[0];
             outTri.tri[1] = insidePoints[1];
             outTri.tri[2] = intersectPlane(planeP, planeN, insidePoints[0], outsidePoints[0]);
 
+            outTri2.setColor(Color.BLUE);
             outTri2.tri[0] = insidePoints[1];
-            outTri2.tri[1] = insidePoints[2];
+            outTri2.tri[1] = outTri.tri[2];
             outTri2.tri[2] = intersectPlane(planeP, planeN, insidePoints[1], outsidePoints[0]);
             return 2;
         }
         return 0;
     }
+
 
     public static Vec3D intersectPlane(Vec3D planeP, Vec3D planeN, Vec3D lineStart, Vec3D lineEnd) {
         planeN.normalize();
