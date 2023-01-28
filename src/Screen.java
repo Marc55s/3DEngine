@@ -192,7 +192,6 @@ public class Screen extends JPanel implements Runnable {
                     triProjected.tri[2] = Vec3D.div(triProjected.tri[2], triProjected.tri[2].w);
                      */
 
-
                     for (int i = 0; i < 3; i++) {
                         triProjected.tri[i].x *= -1.0f;
                         triProjected.tri[i].y *= -1.0f;
