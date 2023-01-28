@@ -5,6 +5,7 @@ import geom.Vec3D;
 
 import javax.swing.JPanel;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Vector;
 
@@ -78,7 +79,6 @@ public class Screen extends JPanel implements Runnable {
         }
          */
 
-
         for (int j = 0; j < vecTrianglesToDraw.size(); j++) {
             Triangle triangle = vecTrianglesToDraw.get(j);
             drawTriangle(g2, (int) triangle.tri[0].x, (int) triangle.tri[0].y, (int) triangle.tri[1].x, (int) triangle.tri[1].y, (int) triangle.tri[2].x, (int) triangle.tri[2].y, triangle);
@@ -91,7 +91,7 @@ public class Screen extends JPanel implements Runnable {
         p.addPoint(x2, y2);
         p.addPoint(x3, y3);
         //triangle.setColor(Color.darkGray);
-        g.setPaint(new GradientPaint(x1, y1, triangle.getColor().brighter(), x2, y2, triangle.getColor().darker()));
+        //g.setPaint(new GradientPaint(x1, y1, triangle.getColor().brighter(), x2, y2, triangle.getColor().darker()));
         g.setColor(triangle.getColor());
         g.fillPolygon(p);
     }
@@ -163,7 +163,6 @@ public class Screen extends JPanel implements Runnable {
                 if (grey >= 255) grey = 255;
                 c = new Color(grey, grey, grey);
 
-
                 //Convert World Space --> View Space
                 triViewed = triTransformed.applyMatrix(viewMat);
 
@@ -172,9 +171,9 @@ public class Screen extends JPanel implements Runnable {
                 Triangle[] clipped = new Triangle[2];
                 clipped[0] = new Triangle();
                 clipped[1] = new Triangle();
-                triProjected = new Triangle();
                 clippedTriangles = Triangle.clipAgainstPlane(new Vec3D(0, 0, 0.1f), new Vec3D(0, 0, 1), triViewed, clipped[0], clipped[1]);
                 for (int n = 0; n < clippedTriangles; n++) {
+                    triProjected = new Triangle();
                     triProjected.tri[0] = Mat4x4.multiplyVector(clipped[n].tri[0], projectionMatrix);
                     triProjected.tri[1] = Mat4x4.multiplyVector(clipped[n].tri[1], projectionMatrix);
                     triProjected.tri[2] = Mat4x4.multiplyVector(clipped[n].tri[2], projectionMatrix);
@@ -184,13 +183,6 @@ public class Screen extends JPanel implements Runnable {
                     triProjected.tri[2] = Vec3D.div(triProjected.tri[2], triProjected.tri[2].w);
 
                     triProjected.setColor(clipped[n].getColor());
-                    /*
-                    //Project 3D --> 2D
-                    triProjected = triViewed.applyMatrix(Mat4x4.multiplyMatrices(world, projectionMatrix));
-                    triProjected.tri[0] = Vec3D.div(triProjected.tri[0], triProjected.tri[0].w);
-                    triProjected.tri[1] = Vec3D.div(triProjected.tri[1], triProjected.tri[1].w);
-                    triProjected.tri[2] = Vec3D.div(triProjected.tri[2], triProjected.tri[2].w);
-                     */
 
                     for (int i = 0; i < 3; i++) {
                         triProjected.tri[i].x *= -1.0f;

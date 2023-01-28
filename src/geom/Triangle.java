@@ -24,6 +24,7 @@ public class Triangle {
     }
 
     public static int clipAgainstPlane(Vec3D planeP, Vec3D planeN, Triangle inTri, Triangle outTri, Triangle outTri2) {
+
         planeN.normalize();
         //shortest distance from point to plane d(E,P); HNF
         int inside = 0;
