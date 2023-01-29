@@ -63,19 +63,19 @@ public class Triangle {
             return 1;
         }
         if (inside == 1) {
-            outTri.setColor(Color.GREEN.darker().darker().darker());
+            //outTri.setColor(Color.GREEN.darker().darker().darker());
             outTri.tri[0] = insidePoints[0];
             outTri.tri[1] = intersectPlane(planeP, planeN, insidePoints[0], outsidePoints[0]);
             outTri.tri[2] = intersectPlane(planeP, planeN, insidePoints[0], outsidePoints[1]);
             return 1;
         }
         if (inside == 2) {
-            outTri.setColor(Color.RED);
+            //outTri.setColor(Color.RED);
             outTri.tri[0] = insidePoints[0];
             outTri.tri[1] = insidePoints[1];
             outTri.tri[2] = intersectPlane(planeP, planeN, insidePoints[0], outsidePoints[0]);
 
-            outTri2.setColor(Color.BLUE);
+            //outTri2.setColor(Color.BLUE);
             outTri2.tri[0] = insidePoints[1];
             outTri2.tri[1] = outTri.tri[2];
             outTri2.tri[2] = intersectPlane(planeP, planeN, insidePoints[1], outsidePoints[0]);
@@ -110,6 +110,10 @@ public class Triangle {
             vec3DS[i] = vec3D;
         }
         return new Triangle(vec3DS);
+    }
+
+    public double getAvgZ() {
+        return (tri[0].z + tri[1].z + tri[2].z) / 3d;
     }
 
     public Color getColor() {

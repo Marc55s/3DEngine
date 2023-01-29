@@ -5,14 +5,15 @@ import geom.Vec3D;
 
 import javax.swing.JPanel;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Vector;
+import java.util.*;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Screen extends JPanel implements Runnable {
 
     Mesh mesh;
     private Thread thread;
+    Queue<Triangle> listTriangle;
 
     //Screenvars
     final int originalTileSize = 16;
@@ -47,42 +48,79 @@ public class Screen extends JPanel implements Runnable {
     public Screen() {
         setPreferredSize(new Dimension(screenWidth, screenHeight));
         setBackground(Color.BLACK);
-        setDoubleBuffered(true);
+        //setDoubleBuffered(true);
         mesh = new Mesh();
-        mesh.loadObjFile("axis.obj");
+        //mesh.loadObjFile("axis.obj");
+        mesh.loadObjFile("mountains.obj");
         //mesh.loadObjFile("VFAN500_v13.obj");
         //mesh.loadObjFile("ship.obj");
         //mesh.loadObjFile("Porsche 911 CFD READY v1.obj");
+        //mesh.loadObjFile("plane.obj");
     }
 
-    Vector<Triangle> vecTrianglesToDraw = new Vector<>();
+    ArrayList<Triangle> vecTrianglesToDraw = new ArrayList<>();
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
         g.setColor(Color.WHITE);
-        RenderingHints rh = new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2.setRenderingHints(rh);
+        //RenderingHints rh = new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        //g2.setRenderingHints(rh);
+
 
         //Z-Buffer
-        //Map<Float, Triangle> map = new HashMap<>();
-        /*
-        TreeMap<Float, Triangle> map = new TreeMap<>(Collections.reverseOrder());
-        List<Float> zDepth = vecTrianglesToDraw.parallelStream().map(e -> (e.tri[0].z + e.tri[1].z + e.tri[2].z) / 3).toList();
-        for (int i = 0; i < vecTrianglesToDraw.size(); i++) {
-            map.put(zDepth.get(i), vecTrianglesToDraw.get(i));
-        }
-        for (Map.Entry<Float, Triangle> entry : map.entrySet()) {
-            Triangle triangle = entry.getValue();
-            drawTriangle(g2, (int) triangle.tri[0].x, (int) triangle.tri[0].y, (int) triangle.tri[1].x, (int) triangle.tri[1].y, (int) triangle.tri[2].x, (int) triangle.tri[2].y, triangle);
-        }
-         */
+        CopyOnWriteArrayList<Triangle> buffer = new CopyOnWriteArrayList<>(vecTrianglesToDraw);
+        List<Triangle> zDepth = new ArrayList<>(List.copyOf(vecTrianglesToDraw));
+        buffer.sort(Comparator.comparing(Triangle::getAvgZ).reversed());
 
-        for (int j = 0; j < vecTrianglesToDraw.size(); j++) {
-            Triangle triangle = vecTrianglesToDraw.get(j);
-            drawTriangle(g2, (int) triangle.tri[0].x, (int) triangle.tri[0].y, (int) triangle.tri[1].x, (int) triangle.tri[1].y, (int) triangle.tri[2].x, (int) triangle.tri[2].y, triangle);
+        //Clip against left, right, up, down
+        int n = 0;
+        for (int j = 0; j < buffer.size(); j++) {
+            Triangle triangle = buffer.get(j);
+            Triangle[] clipped = new Triangle[2];
+            listTriangle = new LinkedList<>();
+            listTriangle.add(triangle);
+            int nTriangles = 1;
+            for (int clipSide = 0; clipSide < 4; clipSide++) {
+                int nTrisToAdd = 0;
+                while (nTriangles > 0) {
+                    Triangle test = listTriangle.peek();
+                    clipped[0] = new Triangle();
+                    clipped[1] = new Triangle();
+                    nTriangles--;
+                    switch (clipSide) {
+                        case 0 ->
+                                nTrisToAdd = Triangle.clipAgainstPlane(new Vec3D(0, 0, 0), new Vec3D(0, 1f, 0), test, clipped[0], clipped[1]);
+                        case 1 ->
+                                nTrisToAdd = Triangle.clipAgainstPlane(new Vec3D(0, screenHeight - 1, 0), new Vec3D(0, -1f, 0), test, clipped[0], clipped[1]);
+                        case 2 ->
+                                nTrisToAdd = Triangle.clipAgainstPlane(new Vec3D(0, 0, 0), new Vec3D(1, 0, 0), test, clipped[0], clipped[1]);
+                        case 3 ->
+                                nTrisToAdd = Triangle.clipAgainstPlane(new Vec3D(screenWidth - 1, 0, 0), new Vec3D(-1, 0, 0), test, clipped[0], clipped[1]);
+                    }
+
+                    for (int w = 0; w < nTrisToAdd; w++) {
+                        listTriangle.add(clipped[w]);
+                    }
+                }
+                nTriangles = listTriangle.size();
+            }
+            n += nTriangles;
+            for (Triangle tri : listTriangle) {
+                drawTriangle(g2, (int) tri.tri[0].x, (int) tri.tri[0].y, (int) tri.tri[1].x, (int) tri.tri[1].y, (int) tri.tri[2].x, (int) tri.tri[2].y, tri);
+            }
         }
+
+
+        /*
+        for (int j = 0; j < vecTrianglesToDraw.size(); j++) {
+
+            Triangle tri = vecTrianglesToDraw.get(j);
+            drawTriangle(g2, (int) tri.tri[0].x, (int) tri.tri[0].y, (int) tri.tri[1].x, (int) tri.tri[1].y, (int) tri.tri[2].x, (int) tri.tri[2].y, tri);
+        }
+        */
+
     }
 
     void drawTriangle(Graphics2D g, int x1, int y1, int x2, int y2, int x3, int y3, Triangle triangle) {
@@ -106,8 +144,8 @@ public class Screen extends JPanel implements Runnable {
             case RIGHT -> vCamera.x -= 0.2f * delta;
             case W -> vCamera = Vec3D.add(vCamera, vForward);
             case S -> vCamera = Vec3D.sub(vCamera, vForward);
-            case A -> fYaw += 0.05f * delta;
-            case D -> fYaw -= 0.05f * delta;
+            case A -> fYaw -= 0.05f * delta;
+            case D -> fYaw += 0.05f * delta;
         }
 
         Mat4x4 xRotation;
@@ -115,7 +153,7 @@ public class Screen extends JPanel implements Runnable {
         zRotation = Mat4x4.createZRotationMatrix(alpha * 0.5f);
         xRotation = Mat4x4.createXRotationMatrix(alpha);
 
-        Mat4x4 translationMatrix = Mat4x4.createTranslationMatrix(0, 0, 6); // OFFSET Y ###########################################
+        Mat4x4 translationMatrix = Mat4x4.createTranslationMatrix(0, 0, 10); // OFFSET Y ###########################################
         //World matrix
         Mat4x4 world;
         world = Mat4x4.multiplyMatrices(zRotation, xRotation);
@@ -153,7 +191,7 @@ public class Screen extends JPanel implements Runnable {
             if (Vec3D.dotProduct(nNormalized, vCameraRay) < 0.0f) {
 
                 //Illumination
-                Vec3D lightDirection = new Vec3D(0.0f, 1.0f, -1.0f);
+                Vec3D lightDirection = new Vec3D(0.0f, 1.0f, 0);
                 lightDirection.normalize();
 
                 //Dotproduct to adapt shading of the light
@@ -230,11 +268,13 @@ public class Screen extends JPanel implements Runnable {
 
             if (delta >= 1) {
                 update(delta);
-                //paintImmediately(getBounds());
                 repaint();
+                updateUI();
+
                 frames++;
                 delta--;
             }
+            repaint();
             if (timer >= 1_000_000_000) {
                 //System.out.println("FPS : " + frames);
                 timer = 0;
