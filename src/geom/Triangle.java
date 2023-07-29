@@ -5,6 +5,7 @@ import java.awt.Color;
 public class Triangle {
     private Color color;
     public Vec3D[] tri;
+    public Vec2D[] t;
 
     public Triangle(Vec3D[] tri) {
         this.tri = tri;

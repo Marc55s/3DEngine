@@ -6,7 +6,7 @@ public class KeyHandler implements KeyListener {
 
     public static Direction direction = Direction.NONE;
 
-    public enum Direction {
+    public static enum Direction {
         W, A, S, D, UP, DOWN, LEFT, RIGHT, NONE
     }
 

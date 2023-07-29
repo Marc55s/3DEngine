@@ -16,14 +16,8 @@ public class Screen extends JPanel implements Runnable {
     Queue<Triangle> listTriangle;
 
     //Screenvars
-    final int originalTileSize = 16;
-    final int scale = 3;
-
-    final int tileSize = originalTileSize * scale;
-    final int maxScreenCol = 18;
-    final int maxScreenRow = 14;
-    final int screenWidth = tileSize * maxScreenCol;
-    final int screenHeight = tileSize * maxScreenRow;
+    final int screenWidth = 1300;
+    final int screenHeight = 900;
 
     Vec3D vCamera;
     Vec3D vLookDir = new Vec3D(1, 1, 1);
@@ -50,8 +44,10 @@ public class Screen extends JPanel implements Runnable {
         setBackground(Color.BLACK);
         //setDoubleBuffered(true);
         mesh = new Mesh();
+        mesh.createCube();
+
         //mesh.loadObjFile("axis.obj");
-        mesh.loadObjFile("mountains.obj");
+        //mesh.loadObjFile("mountains.obj");
         //mesh.loadObjFile("VFAN500_v13.obj");
         //mesh.loadObjFile("ship.obj");
         //mesh.loadObjFile("Porsche 911 CFD READY v1.obj");
@@ -65,14 +61,14 @@ public class Screen extends JPanel implements Runnable {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
         g.setColor(Color.WHITE);
-        //RenderingHints rh = new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        //g2.setRenderingHints(rh);
+        RenderingHints rh = new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setRenderingHints(rh);
+        update(0.1f);
 
 
         //Z-Buffer
-        CopyOnWriteArrayList<Triangle> buffer = new CopyOnWriteArrayList<>(vecTrianglesToDraw);
-        List<Triangle> zDepth = new ArrayList<>(List.copyOf(vecTrianglesToDraw));
-        buffer.sort(Comparator.comparing(Triangle::getAvgZ).reversed());
+        ArrayList<Triangle> buffer = new ArrayList<>(vecTrianglesToDraw);
+        buffer.sort(Comparator.comparing(Triangle::getAvgZ).reversed()); // Sorting Triangles with average z and drawing the one furthest away first to avoid seeing through objects
 
         //Clip against left, right, up, down
         int n = 0;
@@ -111,16 +107,6 @@ public class Screen extends JPanel implements Runnable {
                 drawTriangle(g2, (int) tri.tri[0].x, (int) tri.tri[0].y, (int) tri.tri[1].x, (int) tri.tri[1].y, (int) tri.tri[2].x, (int) tri.tri[2].y, tri);
             }
         }
-
-
-        /*
-        for (int j = 0; j < vecTrianglesToDraw.size(); j++) {
-
-            Triangle tri = vecTrianglesToDraw.get(j);
-            drawTriangle(g2, (int) tri.tri[0].x, (int) tri.tri[0].y, (int) tri.tri[1].x, (int) tri.tri[1].y, (int) tri.tri[2].x, (int) tri.tri[2].y, tri);
-        }
-        */
-
     }
 
     void drawTriangle(Graphics2D g, int x1, int y1, int x2, int y2, int x3, int y3, Triangle triangle) {
@@ -128,15 +114,12 @@ public class Screen extends JPanel implements Runnable {
         p.addPoint(x1, y1);
         p.addPoint(x2, y2);
         p.addPoint(x3, y3);
-        //triangle.setColor(Color.darkGray);
-        //g.setPaint(new GradientPaint(x1, y1, triangle.getColor().brighter(), x2, y2, triangle.getColor().darker()));
         g.setColor(triangle.getColor());
         g.fillPolygon(p);
     }
 
     public void update(double delta) {
         Vec3D vForward = Vec3D.mul(vLookDir, (float) (0.5f * delta));
-
         switch (KeyHandler.direction) {
             case UP -> vCamera.y += 0.2f * delta;
             case DOWN -> vCamera.y -= 0.2f * delta;
@@ -153,7 +136,7 @@ public class Screen extends JPanel implements Runnable {
         zRotation = Mat4x4.createZRotationMatrix(alpha * 0.5f);
         xRotation = Mat4x4.createXRotationMatrix(alpha);
 
-        Mat4x4 translationMatrix = Mat4x4.createTranslationMatrix(0, 0, 10); // OFFSET Y ###########################################
+        Mat4x4 translationMatrix = Mat4x4.createTranslationMatrix(0, 0, 3); // OFFSET Y ###########################################
         //World matrix
         Mat4x4 world;
         world = Mat4x4.multiplyMatrices(zRotation, xRotation);
@@ -191,7 +174,7 @@ public class Screen extends JPanel implements Runnable {
             if (Vec3D.dotProduct(nNormalized, vCameraRay) < 0.0f) {
 
                 //Illumination
-                Vec3D lightDirection = new Vec3D(0.0f, 1.0f, 0);
+                Vec3D lightDirection = new Vec3D(0.0f, 1.0f, -1);
                 lightDirection.normalize();
 
                 //Dotproduct to adapt shading of the light
@@ -267,10 +250,7 @@ public class Screen extends JPanel implements Runnable {
             lastTime = currentTime;
 
             if (delta >= 1) {
-                update(delta);
                 repaint();
-                updateUI();
-
                 frames++;
                 delta--;
             }

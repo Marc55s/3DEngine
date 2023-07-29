@@ -32,19 +32,19 @@ public class Mesh {
                     if (line.charAt(0) == 'f') {
                         String[] three = line.split(" ");
                         //Filter .obj format
-                        if(three[1].contains("/")) {
+                        if (three[1].contains("/")) {
                             var xs = three[1].split("/");
                             var ys = three[2].split("/");
                             var zs = three[3].split("/");
                             int x = Integer.parseInt((xs[0]));
                             int y = Integer.parseInt((ys[0]));
                             int z = Integer.parseInt((zs[0]));
-                            triangles.add(new Triangle(new Vec3D[]{vertices.get(x-1), vertices.get(y-1),vertices.get(z-1)}));
-                        }else{
+                            triangles.add(new Triangle(new Vec3D[]{vertices.get(x - 1), vertices.get(y - 1), vertices.get(z - 1)}));
+                        } else {
                             int x = Integer.parseInt(three[1]);
                             int y = Integer.parseInt(three[2]);
                             int z = Integer.parseInt(three[3]);
-                            triangles.add(new Triangle(new Vec3D[]{vertices.get(x-1), vertices.get(y-1),vertices.get(z-1)}));
+                            triangles.add(new Triangle(new Vec3D[]{vertices.get(x - 1), vertices.get(y - 1), vertices.get(z - 1)}));
                         }
                     }
                 }
@@ -57,39 +57,38 @@ public class Mesh {
     }
 
 
-    private Mesh createCube() {
-        Mesh mesh = new Mesh();
+    public Mesh createCube() {
         //South
-        Triangle s = new Triangle(new Vec3D[]{new Vec3D(0.0f, 0.0f, 0.0f), new Vec3D(0.0f, 1.0f, 0.0f), new Vec3D(1.0f, 1.0f, 0.0f)});
-        Triangle s2 = new Triangle(new Vec3D[]{new Vec3D(0.0f, 0.0f, 0.0f), new Vec3D(1.0f, 1.0f, 0.0f), new Vec3D(1.0f, 0.0f, 0.0f)});
+        Triangle s = new Triangle(new Vec3D[]{new Vec3D(0.0f, 0.0f, 0.0f,1.0f), new Vec3D(0.0f, 1.0f, 0.0f,1.0f), new Vec3D(1.0f, 1.0f, 0.0f,1.0f)});
+        Triangle s2 = new Triangle(new Vec3D[]{new Vec3D(0.0f, 0.0f, 0.0f,1.0f), new Vec3D(1.0f, 1.0f, 0.0f,1.0f), new Vec3D(1.0f, 0.0f, 0.0f,1.0f)});
         //EAST
-        Triangle e = new Triangle(new Vec3D[]{new Vec3D(1.0f, 0.0f, 0.0f), new Vec3D(1.0f, 1.0f, 0.0f), new Vec3D(1.0f, 1.0f, 1.0f)});
-        Triangle e2 = new Triangle(new Vec3D[]{new Vec3D(1.0f, 0.0f, 0.0f), new Vec3D(1.0f, 1.0f, 1.0f), new Vec3D(1.0f, 0.0f, 1.0f)});
+        Triangle e = new Triangle(new Vec3D[]{new Vec3D(1.0f, 0.0f, 0.0f,1.0f), new Vec3D(1.0f, 1.0f, 0.0f,1.0f), new Vec3D(1.0f, 1.0f, 1.0f,1.0f)});
+        Triangle e2 = new Triangle(new Vec3D[]{new Vec3D(1.0f, 0.0f, 0.0f,1.0f), new Vec3D(1.0f, 1.0f, 1.0f,1.0f), new Vec3D(1.0f, 0.0f, 1.0f,1.0f)});
         //NORTH
-        Triangle n = new Triangle(new Vec3D[]{new Vec3D(1.0f, 0.0f, 1.0f), new Vec3D(1.0f, 1.0f, 1.0f), new Vec3D(0.0f, 1.0f, 1.0f)});
-        Triangle n2 = new Triangle(new Vec3D[]{new Vec3D(1.0f, 0.0f, 1.0f), new Vec3D(0.0f, 1.0f, 1.0f), new Vec3D(0.0f, 0.0f, 1.0f)});
+        Triangle n = new Triangle(new Vec3D[]{new Vec3D(1.0f, 0.0f, 1.0f,1.0f), new Vec3D(1.0f, 1.0f, 1.0f,1.0f), new Vec3D(0.0f, 1.0f, 1.0f,1.0f)});
+        Triangle n2 = new Triangle(new Vec3D[]{new Vec3D(1.0f, 0.0f, 1.0f,1.0f), new Vec3D(0.0f, 1.0f, 1.0f,1.0f), new Vec3D(0.0f, 0.0f, 1.0f,1.0f)});
         //WEST
-        Triangle w = new Triangle(new Vec3D[]{new Vec3D(0.0f, 0.0f, 1.0f), new Vec3D(0.0f, 1.0f, 1.0f), new Vec3D(0.0f, 1.0f, 0.0f)});
-        Triangle w2 = new Triangle(new Vec3D[]{new Vec3D(0.0f, 0.0f, 1.0f), new Vec3D(0.0f, 1.0f, 0.0f), new Vec3D(0.0f, 0.0f, 0.0f)});
+        Triangle w = new Triangle(new Vec3D[]{new Vec3D(0.0f, 0.0f, 1.0f,1.0f), new Vec3D(0.0f, 1.0f, 1.0f,1.0f), new Vec3D(0.0f, 1.0f, 0.0f,1.0f)});
+        Triangle w2 = new Triangle(new Vec3D[]{new Vec3D(0.0f, 0.0f, 1.0f,1.0f), new Vec3D(0.0f, 1.0f, 0.0f,1.0f), new Vec3D(0.0f, 0.0f, 0.0f,1.0f)});
         //TOP
-        Triangle t = new Triangle(new Vec3D[]{new Vec3D(0.0f, 1.0f, 0.0f), new Vec3D(0.0f, 1.0f, 1.0f), new Vec3D(1.0f, 1.0f, 1.0f)});
-        Triangle t2 = new Triangle(new Vec3D[]{new Vec3D(0.0f, 1.0f, 0.0f), new Vec3D(1.0f, 1.0f, 1.0f), new Vec3D(1.0f, 1.0f, 0.0f)});
+        Triangle t = new Triangle(new Vec3D[]{new Vec3D(0.0f, 1.0f, 0.0f,1.0f), new Vec3D(0.0f, 1.0f, 1.0f,1.0f), new Vec3D(1.0f, 1.0f, 1.0f,1.0f)});
+        Triangle t2 = new Triangle(new Vec3D[]{new Vec3D(0.0f, 1.0f, 0.0f,1.0f), new Vec3D(1.0f, 1.0f, 1.0f,1.0f), new Vec3D(1.0f, 1.0f, 0.0f,1.0f)});
         //Bottom
-        Triangle b = new Triangle(new Vec3D[]{new Vec3D(1.0f, 0.0f, 1.0f), new Vec3D(0.0f, 0.0f, 1.0f), new Vec3D(0.0f, 0.0f, 0.0f)});
-        Triangle b2 = new Triangle(new Vec3D[]{new Vec3D(1.0f, 0.0f, 1.0f), new Vec3D(0.0f, 0.0f, 0.0f), new Vec3D(1.0f, 0.0f, 0.0f)});
+        Triangle b = new Triangle(new Vec3D[]{new Vec3D(1.0f, 0.0f, 1.0f,1.0f), new Vec3D(0.0f, 0.0f, 1.0f,1.0f), new Vec3D(0.0f, 0.0f, 0.0f,1.0f)});
+        Triangle b2 = new Triangle(new Vec3D[]{new Vec3D(1.0f, 0.0f, 1.0f,1.0f), new Vec3D(0.0f, 0.0f, 0.0f,1.0f), new Vec3D(1.0f, 0.0f, 0.0f,1.0f)});
 
-        mesh.add(s);
-        mesh.add(s2);
-        mesh.add(e);
-        mesh.add(e2);
-        mesh.add(n);
-        mesh.add(n2);
-        mesh.add(w);
-        mesh.add(w2);
-        mesh.add(t);
-        mesh.add(t2);
-        mesh.add(b);
-        mesh.add(b2);
-        return mesh;
+        triangles.add(s);
+        triangles.add(s2);
+        triangles.add(e);
+        triangles.add(e2);
+        triangles.add(n);
+        triangles.add(n2);
+        triangles.add(w);
+        triangles.add(w2);
+        triangles.add(t);
+        triangles.add(t2);
+        triangles.add(b);
+        triangles.add(b2);
+        return this;
     }
 }
